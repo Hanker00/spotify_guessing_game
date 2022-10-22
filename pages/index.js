@@ -14,13 +14,13 @@ import CurrentlyPlaying from '../components/CurrentlyPlaying';
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
+    <div className="flex min-h-screen bg-[#121212] flex-col items-center justify-center py-2">
       <title>Spotify Guess</title>
       <link rel="icon" href="/favicon.ico" />
       <div>
         <h1 className="text-4xl font-bold text-center">Spotify guess</h1>
       </div>
-      <div className='text-gray-500 p-5 text-sm border-r border-gray-900'>
+      <div className='text-gray-500 p-5 text-sm '>
         <PlaylistCard />
         <Player />
         <CurrentlyPlaying/>

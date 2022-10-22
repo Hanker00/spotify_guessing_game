@@ -1,7 +1,8 @@
 import { getProviders, signIn } from "next-auth/react"
 function Login({providers}) {
   return (
-    <div className="flex flex-col items-center bg-black min-h-screen w-full justify-center">
+    <div className="flex flex-col items-center bg-[#121212] min-h-screen w-full justify-center">
+        <h1></h1>
         <h1 className="text-white">Welcome to Spotify drinking game please login to continue</h1>
         {Object.values(providers).map((provider) => (
           <div key={provider.name}>
