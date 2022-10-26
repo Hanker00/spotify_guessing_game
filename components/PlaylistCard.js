@@ -63,10 +63,9 @@ function PlaylistCard() {
             <figure className="flex flex-col items-center pb-4 ">
                 <img className="justify-center" src={currentSongInfo?.album?.images[2].url}/>
             </figure>
-
             <div className="card-body text-center">
-                <h2 className="card-title font-bold text-3xl">{currentSongInfo?.artists[0].name}</h2>
-                <h3 className="card-title opacity-70 text-2xl">{currentSongInfo?.name}</h3>
+                <h2 className="card-title font-bold 2xl:text-5xl text-3xl">{currentSongInfo?.artists[0].name}</h2>
+                <h3 className="card-title opacity-70 2xl:text-4xl text-2xl">{currentSongInfo?.name}</h3>
                 <div className="flex justify-between items-center ">
                     <div className="text-grey-darker ">
                         <button onClick={playPrevious}>
@@ -86,10 +85,10 @@ function PlaylistCard() {
                    
                 </div>
                 <div className='justify-center'>
-                {show ? <button onClick={() => setShow(false)} className=" text-lg bg-[#1DB954] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                {show ? <button onClick={() => setShow(false)} className=" 2xl:text-3xl text-lg bg-[#1DB954] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                     Click to see who added this song
                     </button>
-                    : <p className='mt-4 text-lg'>{addedBy}</p>}
+                    : <p className='mt-4 2xl:text-3xl text-lg'>{addedBy}</p>}
                 </div>
             </div>
         </div>
