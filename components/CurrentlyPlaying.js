@@ -28,61 +28,61 @@ function CurrentlyPlaying() {
                 }, function (err) {
                     console.log('Something went wrong!', err);
                 });
-                await spotifyApi.getPlaylist(tempName)
+            await spotifyApi.getPlaylist(tempName)
                 .then((data) => {
                     setTotalTracks(data.body.tracks.total)
                     setPlaylistName(data.body.name)
                 }, (err) => {
                     console.log('Something went wrong!', err)
                 })
-                if(totalTracks > 0) {
-                    const addedById = await getAddedBy(tempName, tempCurrentTrack)
-                    console.log(addedById)
-                    spotifyApi.getUser(addedById)
+            if (totalTracks > 0) {
+                const addedById = await getAddedBy(tempName, tempCurrentTrack)
+                console.log(addedById)
+                spotifyApi.getUser(addedById)
                     .then((data) => {
                         setAddedBy(data.body.display_name)
                     },
-                    (err) => {
-                        console.log('Something went wrong!', err)
-                    })
-                }
+                        (err) => {
+                            console.log('Something went wrong!', err)
+                        })
+            }
         }
     }, [currentTrackId, spotifyApi, session, totalTracks]);
 
     const getAddedBy = async (playlistId, trackId) => {
         console.log("this acutally runs")
         console.log(totalTracks)
-        for(let i = 0; i < totalTracks; i += 100) {
+        for (let i = 0; i < totalTracks; i += 100) {
             let tracks = []
             tracks = await spotifyApi.getPlaylistTracks(playlistId, {
                 offset: i,
                 limit: 100,
                 fields: 'items'
-              })
-              .then(
-                function(data) {
-                  return data.body
-                },
-                function(err) {
-                  console.log('Something went wrong!', err);
-                }
-              );
-              console.log("but this does not?")
-              console.log(tracks.items)
-              for(let j = 0; j < tracks.items.length; j++) {
+            })
+                .then(
+                    function (data) {
+                        return data.body
+                    },
+                    function (err) {
+                        console.log('Something went wrong!', err);
+                    }
+                );
+            console.log("but this does not?")
+            console.log(tracks.items)
+            for (let j = 0; j < tracks.items.length; j++) {
                 console.log(tracks.items[j])
-                if(tracks.items[j].track.id === trackId) {
+                if (tracks.items[j].track.id === trackId) {
                     console.log(tracks.items[j].added_by)
                     return tracks.items[j].added_by.id
                 }
-              }
+            }
         }
     }
 
     return (
         <div>
             <h1>
-                
+
             </h1>
         </div>
 
