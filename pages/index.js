@@ -6,55 +6,86 @@ import Player from '../components/Player';
 import PlaylistCard from '../components/PlaylistCard';
 import useSpotify from '../hooks/useSpotify';
 import { useRecoilState } from 'recoil';
-import { currentTrackIdState, addedByState } from '../atoms/songAtom';
+import { currentTrackIdState, addedByState, isPlayingState, blendState } from '../atoms/songAtom';
 import { playlistIdState, playlistNameState, totalTracksState } from '../atoms/playlistAtom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import CurrentlyPlaying from '../components/CurrentlyPlaying';
+import PlaylistCardv2 from '../components/PlaylistCardv2';
 
 
 
 export default function Home() {
-  const spotifyApi = useSpotify()
+  // Initialize states and hooks
+  const spotifyApi = useSpotify();
   const { data: session, status } = useSession();
-  const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
+  const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState);
   const [playlist, setPlaylist] = useRecoilState(playlistIdState);
   const [playlistName, setPlaylistName] = useRecoilState(playlistNameState);
-  const [totalTracks, setTotalTracks] = useRecoilState(totalTracksState)
-  const [addedBy, setAddedBy] = useRecoilState(addedByState)
-  useEffect(async () => {
-    console.log(spotifyApi.getAccessToken())
-    if (spotifyApi.getAccessToken()) {
-      let tempName = ""
-      let tempCurrentTrack = ""
-      await spotifyApi.getMyCurrentPlayingTrack()
-        .then(function (data) {
-          tempName = data.body.context.uri.substring(17)
-          tempCurrentTrack = data.body.item.id
-          setPlaylist(data.body.context.uri.substring(17));
-          setCurrentTrackId(data.body.item.id)
-          console.log("hej")
-        }, function (err) {
-          console.log('Something went wrong!', err);
-        });
-      await spotifyApi.getPlaylist(tempName)
-        .then((data) => {
-          setTotalTracks(data.body.tracks.total)
-          setPlaylistName(data.body.name)
-        }, (err) => {
-          console.log('Something went wrong!', err)
-        })
-      if (totalTracks > 0) {
-        const addedById = await getAddedBy(tempName, tempCurrentTrack)
-        console.log(addedById)
-        spotifyApi.getUser(addedById)
-          .then((data) => {
-            setAddedBy(data.body.display_name)
-          },
-            (err) => {
-              console.log('Something went wrong!', err)
-            })
+  const [totalTracks, setTotalTracks] = useRecoilState(totalTracksState);
+  const [addedBy, setAddedBy] = useRecoilState(addedByState);
+  const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState);
+  const [currentStatus, setCurrentStatus] = useState("Please put on a blend playlist or a playlist where multiple people have added songs");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Define a helper function to handle errors
+  const handleError = (err) => {
+    console.log('Something went wrong!', err);
+  };
+
+  // Use an effect to fetch data when the component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!spotifyApi.getAccessToken()) return;
+
+      let tempName = "";
+      let tempCurrentTrack = "";
+
+      try {
+        const data = await spotifyApi.getMyCurrentPlayingTrack();
+        console.log(data)
+        if (data.statusCode !== 204 && data.body.context !== null) {
+          tempName = data.body.context.uri.substring(17);
+          tempCurrentTrack = data.body.item.id;
+          setPlaylist(tempName);
+          setCurrentTrackId(tempCurrentTrack);
+        } else {
+          setCurrentStatus("No song from a playlist is currently playing")
+          setIsLoading(false);
+        }
+      } catch (err) {
+        handleError(err);
       }
-    }
+
+      if (tempName && tempCurrentTrack) {
+        try {
+          const data = await spotifyApi.getPlaylist(tempName);
+          setTotalTracks(data.body.tracks.total);
+          setPlaylistName(data.body.name);
+        } catch (err) {
+          handleError(err);
+        }
+      }
+
+      if (totalTracks > 0) {
+        const addedById = await getAddedBy(tempName, tempCurrentTrack);
+        if (addedById) {
+          try {
+            const data = await spotifyApi.getUser(addedById);
+            setAddedBy(data.body.display_name);
+            setIsPlaying(true);
+            setIsLoading(false);
+          } catch (err) {
+            handleError(err);
+          }
+        }
+        else {
+          setCurrentStatus("A song from a playlist is playing, but it was not a blend or a playlist with multiple contributors")
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
   }, [currentTrackId, spotifyApi, session, totalTracks]);
 
   const getAddedBy = async (playlistId, trackId) => {
@@ -86,17 +117,23 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#121212] flex-col items-center justify-center py-2">
-      <title className='text-white'>Spotify Guess</title>
-      <link rel="icon" href="/favicon.ico" />
-      <div>
-        <h1 className="text-4xl font-bold text-white text-center">Spotify guess</h1>
+    <div className="min-h-screen bg-[#121212] py-2 pt-20">
+    <div className='p-5 flex justify-between items-center w-full'>
+      <button onClick={() => signOut()} className="w-64 bg-[#1E1E1E] text-[#16FF4A] text-3xl p-5 rounded-lg shadow-lg">Log out</button>
+      <h1 class="flex-grow text-center bg-gradient-to-r from-[#16FF4A] from-100% to-90% to-[#7EB98B] text-transparent bg-clip-text text-7xl text-center">Guessify</h1>
+      <div class="w-64 opacity-0 p-5">
       </div>
-      <div className='text-gray-500 p-5 text-sm '>
-        <PlaylistCard />
-      </div>
-      <button onClick={() => signOut()} className=" 2xl:text-3xl text-lg bg-[#1DB954] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">Log out</button>
     </div>
+    {isLoading ? (
+      <p className='text-3xl text-center'>Loading...</p>
+    ) : isPlaying ? (
+      <div className='text-gray-500 p-5 text-sm '>
+        <PlaylistCard/>
+      </div>
+    ) : (
+      <p className='text-3xl text-center'>{currentStatus}</p>
+    )}
+  </div>
 
 
   )

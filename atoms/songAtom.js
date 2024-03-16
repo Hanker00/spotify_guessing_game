@@ -10,6 +10,11 @@ export const isPlayingState = atom({
     default: false,
 })
 
+export const blendState = atom({
+    key: "blendState",
+    default: "Loading...",
+})
+
 export const addedByState = atom({
     key: "addedByState",
     default: "Loading..."
